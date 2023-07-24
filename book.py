@@ -81,3 +81,13 @@ async def update_book(book_name:str, name:str, book_author:str):
       return BOOKS[book_name]
    return {"Error":"Book not found"}
 
+
+# delete book
+
+@app.delete("/{book_name}")
+
+async def delete_book(book_name:str):
+   if book_name in BOOKS:
+      del BOOKS[book_name]
+      return {"Message":"Book deleted"}
+   return {"Error":"Book not found"}
