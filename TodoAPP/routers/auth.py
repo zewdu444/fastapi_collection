@@ -1,4 +1,4 @@
-from fastapi import FastAPI, Depends, HTTPException
+from fastapi import Depends, HTTPException, APIRouter
 from pydantic import BaseModel
 from typing import Optional
 import models
@@ -34,7 +34,7 @@ def get_db():
   finally:
     db.close()
 
-app = FastAPI()
+router = APIRouter(prefix="/auth", tags=["auth"], responses={404: {"description": "Not found"}})
 
 def get_password_hash(password):
   return bcrypt_context.hash(password)
@@ -71,7 +71,7 @@ def authenticate_user(username:str, password:str, db:Session=Depends(get_db)):
          return False
      return user
 
-@app.post("/create/user")
+@router.post("/create/user")
 async def create_user(create_user: createUser, db: Session = Depends(get_db)):
      create_user= models.Users(username=create_user.username, email=create_user.email, first_name=create_user.first_name, last_name=create_user.last_name, hashed_password=get_password_hash(create_user.password), is_active=True)
      db.add(create_user)
@@ -80,8 +80,7 @@ async def create_user(create_user: createUser, db: Session = Depends(get_db)):
      return {"message": "User Created"}
 
 
-@app.post("/token")
-
+@router.post("/token")
 async def login_for_access_token(form_data:OAuth2PasswordRequestForm = Depends(), db:Session=Depends(get_db)):
   user = authenticate_user(form_data.username, form_data.password, db)
   if not user:
